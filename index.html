@@ -137,31 +137,38 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        const API_BASE = window.location.origin;
+        // 你的 Cloudflare Worker URL
+        const BASE_URL = 'https://trade-api.你的用户名.workers.dev';  // 替换成你的 Worker URL
+
         let windowsData = [];
         let nextId = 0;
 
         async function loadFromServer() {
             try {
-                const res = await fetch(`${API_BASE}/api/data`);
+                const res = await fetch(`${BASE_URL}/api/data`);
+                if (!res.ok) throw new Error('加载失败');
                 const data = await res.json();
                 windowsData = data.windows || [];
                 nextId = data.nextId || 1;
             } catch (e) {
+                console.error(e);
                 windowsData = [{id:1,title:'',content:''},{id:2,title:'',content:''},{id:3,title:'',content:''}];
                 nextId = 4;
+                showToast('⚠️ 无法连接服务器，已载入默认窗口');
             }
             render();
         }
 
         async function saveToServer() {
             try {
-                await fetch(`${API_BASE}/api/data`, {
+                await fetch(`${BASE_URL}/api/data`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ windows: windowsData, nextId })
                 });
-            } catch (e) { showToast('保存失败，请检查网络'); }
+            } catch (e) {
+                showToast('⚠️ 保存失败，请检查网络');
+            }
         }
 
         function showToast(msg) {
@@ -213,7 +220,7 @@
             textarea.addEventListener('input', () => {
                 win.content = textarea.value;
                 clearTimeout(win._saveTimer);
-                win._saveTimer = setTimeout(saveToServer, 600);
+                win._saveTimer = setTimeout(saveToServer, 800);
             });
 
             clearBtn.addEventListener('click', () => {
@@ -246,89 +253,37 @@
             render();
         });
 
-        // ---------- 导出 PDF（已优化分页） ----------
         document.getElementById('btnExportPDF').addEventListener('click', () => {
-            if (typeof html2pdf === 'undefined') {
-                showToast('PDF库加载中，请稍后'); return;
-            }
-            if (windowsData.length === 0) {
-                showToast('没有窗口可导出'); return;
-            }
+            if (typeof html2pdf === 'undefined') { showToast('PDF库加载中'); return; }
+            if (windowsData.length === 0) { showToast('没有窗口'); return; }
 
             const now = new Date();
             const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
-
             let html = `<div style="text-align:center; padding-bottom:16px; border-bottom:2px solid #eee; margin-bottom:20px;">
                 <h1 style="margin:0; font-size:1.5rem;">交易记录汇总</h1>
-                <p style="color:#888; margin:4px 0 0;">${dateStr}　共 ${windowsData.length} 个窗口</p>
-            </div>`;
-
-            windowsData.forEach((w, i) => {
+                <p style="color:#888;">${dateStr}　共 ${windowsData.length} 个窗口</p></div>`;
+            windowsData.forEach((w,i) => {
                 const title = w.title.trim() || '未命名窗口';
-                const content = (w.content || '').trim() || '（无内容）';
-                const escapedContent = content
-                    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-                    .replace(/\n/g,'<br>');
-                // ⭐ 添加 page-break-inside: avoid 避免窗口内部分页
-                html += `<div style="margin-bottom:18px; padding:12px 14px; border:1px solid #ddd; border-radius:8px; background:#fafafa; page-break-inside:avoid; break-inside:avoid;">
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                        <span style="background:#eee; padding:1px 6px; border-radius:4px; font-size:0.7rem;">#${i+1}</span>
-                        <strong style="font-size:0.95rem;">${title.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</strong>
-                    </div>
-                    <div style="white-space:pre-wrap; word-break:break-word; overflow-wrap:anywhere; font-family:monospace; font-size:0.8rem; background:#fff; padding:8px 10px; border-radius:6px; line-height:1.6;">${escapedContent}</div>
-                </div>`;
+                const content = (w.content||'').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+                html += `<div style="margin-bottom:18px; padding:12px; border:1px solid #ddd; border-radius:8px; page-break-inside:avoid;">
+                    <strong>#${i+1} ${title}</strong>
+                    <div style="white-space:pre-wrap; word-break:break-word; margin-top:6px;">${content}</div></div>`;
             });
-
             const overlay = document.createElement('div'); overlay.className='pdf-preview-overlay';
             const card = document.createElement('div'); card.className='pdf-preview-card';
-            card.innerHTML = html;
-            const closeBtn = document.createElement('button'); closeBtn.className='pdf-preview-close'; closeBtn.innerHTML='&times;';
-            closeBtn.onclick = () => overlay.remove();
-            card.appendChild(closeBtn);
+            card.innerHTML = html + '<button class="pdf-preview-close">&times;</button>';
+            card.querySelector('.pdf-preview-close').onclick = () => overlay.remove();
             overlay.appendChild(card);
             document.body.appendChild(overlay);
-
-            // 移除高度限制，确保完整捕获
-            const originalMaxHeight = card.style.maxHeight;
-            const originalOverflow = card.style.overflowY;
-            card.style.maxHeight = 'none';
-            card.style.overflowY = 'visible';
-
+            card.style.maxHeight = 'none'; card.style.overflowY = 'visible';
             setTimeout(() => {
-                html2pdf().set({
-                    margin: [8, 6, 8, 6],
-                    filename: `交易记录_${dateStr.replace(/[:\s]/g,'_')}.pdf`,
-                    image: { type: 'jpeg', quality: 0.95 },
-                    html2canvas: { scale: 2, backgroundColor: '#ffffff', logging: false },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                    // ⭐ 启用 CSS 分页规则
-                    pagebreak: { mode: ['css', 'legacy'] }
-                }).from(card).save().then(() => {
-                    overlay.remove();
-                    showToast('✅ PDF已下载');
-                }).catch(() => {
-                    overlay.remove();
-                    showToast('导出失败，可尝试 Ctrl+P');
-                }).finally(() => {
-                    if (card.parentNode) {
-                        card.style.maxHeight = originalMaxHeight;
-                        card.style.overflowY = originalOverflow;
-                    }
-                });
+                html2pdf().set({ margin:[8,6], filename:`交易记录_${dateStr.replace(/[:\s]/g,'_')}.pdf`, html2canvas:{scale:2}, jsPDF:{format:'a4'}, pagebreak:{mode:['css','legacy']} }).from(card).save().then(() => overlay.remove()).catch(() => overlay.remove());
             }, 250);
         });
 
-        // 快捷键
         document.addEventListener('keydown', e => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-                e.preventDefault();
-                windowsData.push({ id: nextId++, title:'', content:'' });
-                saveToServer(); render();
-            }
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                document.getElementById('btnExportPDF').click();
-            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); windowsData.push({ id: nextId++, title:'', content:'' }); saveToServer(); render(); }
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); document.getElementById('btnExportPDF').click(); }
         });
 
         loadFromServer();
