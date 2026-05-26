@@ -7,8 +7,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            --bg: #f5f5f7; --card-bg: #ffffff; --text: #1d1d1f;
-            --border: #e8e8ed; --accent: #0071e3; --danger: #ff3b30;
+            --bg: #f5f5f7;
+            --card-bg: #ffffff;
+            --text: #1d1d1f;
+            --border: #e8e8ed;
+            --accent: #0071e3;
+            --danger: #ff3b30;
             --radius: 14px;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -24,7 +28,10 @@
             display:flex; align-items:center; justify-content:space-between;
             gap:8px; flex-wrap:wrap;
         }
-        .navbar-brand { display:flex; align-items:center; gap:6px; font-weight:700; font-size:1.1rem; white-space:nowrap; }
+        .navbar-brand {
+            display:flex; align-items:center; gap:6px; font-weight:700; font-size:1.1rem; white-space:nowrap;
+        }
+        .navbar-brand a { text-decoration:none; color:inherit; }
         .navbar-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
         .btn {
             display:inline-flex; align-items:center; justify-content:center;
@@ -45,7 +52,9 @@
         .window-card {
             background:#fff; border-radius:var(--radius);
             box-shadow:0 1px 4px rgba(0,0,0,0.06);
-            border:1px solid var(--border); overflow:hidden;
+            border:1px solid var(--border);
+            /* 修复：允许内容溢出，让 textarea 的 resize 正常显示 */
+            overflow: visible;
             display:flex; flex-direction:column;
         }
         .card-header { display:flex; align-items:center; gap:6px; padding:12px 12px 6px; }
@@ -79,7 +88,11 @@
             width:100%; flex:1; min-height:120px;
             border:1px solid #eee; border-radius:8px; padding:10px;
             font-family:'SF Mono','Consolas','Menlo',monospace;
-            font-size:0.85rem; resize:vertical; line-height:1.6; margin-top:4px;
+            font-size:0.85rem;
+            /* 确保可拉伸 */
+            resize: vertical;
+            overflow: auto;
+            line-height:1.6; margin-top:4px;
         }
         .toast-container {
             position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
@@ -115,15 +128,13 @@
             .card-content-textarea { font-size:0.8rem; min-height:100px; }
             .clear-content-btn { right:10px; top:6px; font-size:0.6rem; padding:2px 6px; }
         }
-        @media (max-width: 400px) {
-            .btn { padding:4px 8px; font-size:0.7rem; }
-            .navbar-actions { gap:3px; }
-        }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <div class="navbar-brand">📋 交易记录</div>
+        <div class="navbar-brand">
+            <a href="https://你的主页地址.pages.dev">🏠 Tempest07</a> <span style="margin:0 4px; color:#ccc;">/</span> 📋 交易记录
+        </div>
         <div class="navbar-actions">
             <button class="btn btn-outline btn-sm" id="btnAddWindow">＋ 添加</button>
             <button class="btn btn-danger btn-sm" id="btnClearAll">🗑️ 清空</button>
@@ -137,12 +148,13 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // 你的 Cloudflare Worker URL
-        const BASE_URL = 'https://trade-api.你的用户名.workers.dev';  // 替换成你的 Worker URL
+        // ===== 配置：修改为你的 Worker API 地址 =====
+        const BASE_URL = 'https://tempest07.weiqian-yu.workers.dev';
 
         let windowsData = [];
         let nextId = 0;
 
+        // 从服务器加载数据
         async function loadFromServer() {
             try {
                 const res = await fetch(`${BASE_URL}/api/data`);
@@ -152,13 +164,19 @@
                 nextId = data.nextId || 1;
             } catch (e) {
                 console.error(e);
-                windowsData = [{id:1,title:'',content:''},{id:2,title:'',content:''},{id:3,title:'',content:''}];
+                // 网络失败时加载默认窗口
+                windowsData = [
+                    { id: 1, title: '', content: '' },
+                    { id: 2, title: '', content: '' },
+                    { id: 3, title: '', content: '' }
+                ];
                 nextId = 4;
                 showToast('⚠️ 无法连接服务器，已载入默认窗口');
             }
             render();
         }
 
+        // 保存数据到服务器
         async function saveToServer() {
             try {
                 await fetch(`${BASE_URL}/api/data`, {
@@ -171,68 +189,113 @@
             }
         }
 
+        // 弹出提示
         function showToast(msg) {
-            const t = document.createElement('div'); t.className='toast'; t.textContent=msg;
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
             document.getElementById('toastContainer').appendChild(t);
             setTimeout(() => t.remove(), 2200);
         }
 
+        // 渲染所有窗口
         function render() {
             const grid = document.getElementById('windowsGrid');
             grid.innerHTML = '';
             windowsData.forEach((win, idx) => grid.appendChild(createCard(win, idx)));
         }
 
+        // 创建单个窗口卡片
         function createCard(win, idx) {
-            const card = document.createElement('div'); card.className='window-card';
-            const header = document.createElement('div'); header.className='card-header';
-            const idxSpan = document.createElement('span'); idxSpan.className='window-index'; idxSpan.textContent=`#${idx+1}`;
+            const card = document.createElement('div');
+            card.className = 'window-card';
+
+            // 头部
+            const header = document.createElement('div');
+            header.className = 'card-header';
+
+            const idxSpan = document.createElement('span');
+            idxSpan.className = 'window-index';
+            idxSpan.textContent = `#${idx + 1}`;
+
             const titleDisplay = document.createElement('span');
-            titleDisplay.className = 'title-display' + (win.title.trim()?'':' empty');
+            titleDisplay.className = 'title-display' + (win.title.trim() ? '' : ' empty');
             titleDisplay.textContent = win.title.trim() || '未命名窗口';
-            const titleInput = document.createElement('input'); titleInput.className='title-input'; titleInput.value=win.title;
-            const editBtn = document.createElement('button'); editBtn.className='edit-title-btn'; editBtn.innerHTML='✎';
-            const delBtn = document.createElement('button'); delBtn.className='card-delete-btn'; delBtn.innerHTML='✕';
+
+            const titleInput = document.createElement('input');
+            titleInput.className = 'title-input';
+            titleInput.value = win.title;
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-title-btn';
+            editBtn.innerHTML = '✎';
+            editBtn.title = '编辑标题';
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'card-delete-btn';
+            delBtn.innerHTML = '✕';
+            delBtn.title = '删除窗口';
+
             header.append(idxSpan, titleDisplay, titleInput, editBtn, delBtn);
 
-            const body = document.createElement('div'); body.className='card-body';
-            const clearBtn = document.createElement('button'); clearBtn.className='clear-content-btn'; clearBtn.textContent='清空';
-            const textarea = document.createElement('textarea'); textarea.className='card-content-textarea'; textarea.value=win.content;
+            // 内容区
+            const body = document.createElement('div');
+            body.className = 'card-body';
+
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'clear-content-btn';
+            clearBtn.textContent = '清空';
+
+            const textarea = document.createElement('textarea');
+            textarea.className = 'card-content-textarea';
+            textarea.value = win.content;
+            textarea.placeholder = '在此粘贴交易记录...';
+
             body.append(clearBtn, textarea);
             card.append(header, body);
 
+            // ===== 事件处理 =====
+            // 标题编辑
             function enterEdit() {
-                titleDisplay.style.display='none'; titleInput.style.display='block';
-                titleInput.value = win.title; titleInput.focus();
+                titleDisplay.style.display = 'none';
+                titleInput.style.display = 'block';
+                titleInput.value = win.title;
+                titleInput.focus();
             }
             function exitEdit() {
                 win.title = titleInput.value;
                 titleDisplay.textContent = win.title.trim() || '未命名窗口';
-                titleDisplay.className = 'title-display' + (win.title.trim()?'':' empty');
-                titleDisplay.style.display=''; titleInput.style.display='none';
+                titleDisplay.className = 'title-display' + (win.title.trim() ? '' : ' empty');
+                titleDisplay.style.display = '';
+                titleInput.style.display = 'none';
                 saveToServer();
             }
             editBtn.addEventListener('click', enterEdit);
             titleInput.addEventListener('blur', exitEdit);
-            titleInput.addEventListener('keydown', e => { if(e.key==='Enter') exitEdit(); });
+            titleInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter') exitEdit();
+            });
             titleDisplay.addEventListener('dblclick', enterEdit);
 
+            // 内容编辑（防抖保存）
             textarea.addEventListener('input', () => {
                 win.content = textarea.value;
                 clearTimeout(win._saveTimer);
                 win._saveTimer = setTimeout(saveToServer, 800);
             });
 
+            // 清空当前记录
             clearBtn.addEventListener('click', () => {
-                if (win.content.trim() && !confirm('清空当前记录？')) return;
+                if (win.content.trim() && !confirm('确定清空当前窗口的记录吗？')) return;
                 win.content = '';
                 textarea.value = '';
                 saveToServer();
             });
 
+            // 删除窗口
             delBtn.addEventListener('click', () => {
-                if ((win.title.trim()||win.content.trim()) && !confirm('删除窗口？')) return;
-                windowsData = windowsData.filter(w => w.id!==win.id);
+                if ((win.title.trim() || win.content.trim()) && !confirm('确定删除这个窗口吗？')) return;
+                windowsData = windowsData.filter(w => w.id !== win.id);
                 saveToServer();
                 render();
             });
@@ -240,52 +303,99 @@
             return card;
         }
 
+        // 添加窗口
         document.getElementById('btnAddWindow').addEventListener('click', () => {
-            windowsData.push({ id: nextId++, title:'', content:'' });
+            windowsData.push({ id: nextId++, title: '', content: '' });
             saveToServer();
             render();
         });
 
+        // 全部清空
         document.getElementById('btnClearAll').addEventListener('click', () => {
-            if (!confirm('清空所有窗口的标题和内容？')) return;
-            windowsData.forEach(w => { w.title=''; w.content=''; });
+            if (!confirm('确定要清空所有窗口的标题和内容吗？')) return;
+            windowsData.forEach(w => { w.title = ''; w.content = ''; });
             saveToServer();
             render();
         });
 
+        // 导出 PDF
         document.getElementById('btnExportPDF').addEventListener('click', () => {
-            if (typeof html2pdf === 'undefined') { showToast('PDF库加载中'); return; }
-            if (windowsData.length === 0) { showToast('没有窗口'); return; }
+            if (typeof html2pdf === 'undefined') {
+                showToast('PDF库加载中，请稍后重试');
+                return;
+            }
+            if (windowsData.length === 0) {
+                showToast('没有窗口可导出');
+                return;
+            }
 
             const now = new Date();
-            const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
-            let html = `<div style="text-align:center; padding-bottom:16px; border-bottom:2px solid #eee; margin-bottom:20px;">
-                <h1 style="margin:0; font-size:1.5rem;">交易记录汇总</h1>
-                <p style="color:#888;">${dateStr}　共 ${windowsData.length} 个窗口</p></div>`;
-            windowsData.forEach((w,i) => {
+            const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            let html = `
+                <div style="text-align:center; padding-bottom:16px; border-bottom:2px solid #eee; margin-bottom:20px;">
+                    <h1 style="margin:0; font-size:1.5rem;">交易记录汇总</h1>
+                    <p style="color:#888;">${dateStr}　共 ${windowsData.length} 个窗口</p>
+                </div>`;
+
+            windowsData.forEach((w, i) => {
                 const title = w.title.trim() || '未命名窗口';
-                const content = (w.content||'').replace(/</g,'&lt;').replace(/\n/g,'<br>');
-                html += `<div style="margin-bottom:18px; padding:12px; border:1px solid #ddd; border-radius:8px; page-break-inside:avoid;">
-                    <strong>#${i+1} ${title}</strong>
-                    <div style="white-space:pre-wrap; word-break:break-word; margin-top:6px;">${content}</div></div>`;
+                const content = (w.content || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
+                html += `
+                    <div style="margin-bottom:18px; padding:12px; border:1px solid #ddd; border-radius:8px; page-break-inside:avoid;">
+                        <strong>#${i + 1} ${title}</strong>
+                        <div style="white-space:pre-wrap; word-break:break-word; margin-top:6px;">${content}</div>
+                    </div>`;
             });
-            const overlay = document.createElement('div'); overlay.className='pdf-preview-overlay';
-            const card = document.createElement('div'); card.className='pdf-preview-card';
+
+            const overlay = document.createElement('div');
+            overlay.className = 'pdf-preview-overlay';
+            const card = document.createElement('div');
+            card.className = 'pdf-preview-card';
             card.innerHTML = html + '<button class="pdf-preview-close">&times;</button>';
             card.querySelector('.pdf-preview-close').onclick = () => overlay.remove();
             overlay.appendChild(card);
             document.body.appendChild(overlay);
-            card.style.maxHeight = 'none'; card.style.overflowY = 'visible';
+
+            // 导出前移除高度限制，确保完整内容被捕获
+            card.style.maxHeight = 'none';
+            card.style.overflowY = 'visible';
+
             setTimeout(() => {
-                html2pdf().set({ margin:[8,6], filename:`交易记录_${dateStr.replace(/[:\s]/g,'_')}.pdf`, html2canvas:{scale:2}, jsPDF:{format:'a4'}, pagebreak:{mode:['css','legacy']} }).from(card).save().then(() => overlay.remove()).catch(() => overlay.remove());
+                html2pdf()
+                    .set({
+                        margin: [8, 6, 8, 6],
+                        filename: `交易记录_${dateStr.replace(/[:\s]/g, '_')}.pdf`,
+                        image: { type: 'jpeg', quality: 0.95 },
+                        html2canvas: { scale: 2, backgroundColor: '#ffffff', logging: false },
+                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                        pagebreak: { mode: ['css', 'legacy'] }
+                    })
+                    .from(card)
+                    .save()
+                    .then(() => overlay.remove())
+                    .catch(() => {
+                        overlay.remove();
+                        showToast('导出失败，可尝试 Ctrl+P 打印为PDF');
+                    });
             }, 250);
         });
 
+        // 键盘快捷键
         document.addEventListener('keydown', e => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); windowsData.push({ id: nextId++, title:'', content:'' }); saveToServer(); render(); }
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); document.getElementById('btnExportPDF').click(); }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+                e.preventDefault();
+                windowsData.push({ id: nextId++, title: '', content: '' });
+                saveToServer();
+                render();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('btnExportPDF').click();
+            }
         });
 
+        // 启动
         loadFromServer();
     </script>
 </body>
