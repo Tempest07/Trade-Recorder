@@ -43,6 +43,7 @@
         .btn-primary { background:var(--accent); color:#fff; }
         .btn-outline { border:1.5px solid var(--border); }
         .btn-danger { border:1.5px solid #ffcccc; color:var(--danger); }
+        .btn-warning { border:1.5px solid #ffe0b2; color: #f57c00; }
         .main-container { max-width:1300px; margin:0 auto; padding:16px; }
         .windows-grid {
             display:grid;
@@ -53,7 +54,6 @@
             background:#fff; border-radius:var(--radius);
             box-shadow:0 1px 4px rgba(0,0,0,0.06);
             border:1px solid var(--border);
-            /* 修复：允许内容溢出，让 textarea 的 resize 正常显示 */
             overflow: visible;
             display:flex; flex-direction:column;
         }
@@ -89,7 +89,6 @@
             border:1px solid #eee; border-radius:8px; padding:10px;
             font-family:'SF Mono','Consolas','Menlo',monospace;
             font-size:0.85rem;
-            /* 确保可拉伸 */
             resize: vertical;
             overflow: auto;
             line-height:1.6; margin-top:4px;
@@ -133,11 +132,12 @@
 <body>
     <nav class="navbar">
         <div class="navbar-brand">
-            <a href="/">🏠 Tempest07</a> <span style="margin:0 4px; color:#ccc;">/</span> 📋 交易记录
+            <a href="https://你的主页地址.pages.dev">🏠 Tempest07</a> <span style="margin:0 4px; color:#ccc;">/</span> 📋 交易记录
         </div>
         <div class="navbar-actions">
             <button class="btn btn-outline btn-sm" id="btnAddWindow">＋ 添加</button>
-            <button class="btn btn-danger btn-sm" id="btnClearAll">🗑️ 清空</button>
+            <button class="btn btn-warning btn-sm" id="btnClearTexts">📝 清空文本</button>
+            <button class="btn btn-danger btn-sm" id="btnClearAll">🗑️ 全部清空</button>
             <button class="btn btn-primary" id="btnExportPDF">📄 导出</button>
         </div>
     </nav>
@@ -164,7 +164,6 @@
                 nextId = data.nextId || 1;
             } catch (e) {
                 console.error(e);
-                // 网络失败时加载默认窗口
                 windowsData = [
                     { id: 1, title: '', content: '' },
                     { id: 2, title: '', content: '' },
@@ -310,7 +309,20 @@
             render();
         });
 
-        // 全部清空
+        // 新增：只清空所有文本框内容，保留标题
+        document.getElementById('btnClearTexts').addEventListener('click', () => {
+            if (windowsData.length === 0) {
+                showToast('没有窗口可清空');
+                return;
+            }
+            if (!confirm('确定清空所有窗口的交易记录内容吗？（标题将被保留）')) return;
+            windowsData.forEach(w => { w.content = ''; });
+            saveToServer();
+            render();
+            showToast('✅ 所有交易记录内容已清空');
+        });
+
+        // 全部清空（标题+内容）
         document.getElementById('btnClearAll').addEventListener('click', () => {
             if (!confirm('确定要清空所有窗口的标题和内容吗？')) return;
             windowsData.forEach(w => { w.title = ''; w.content = ''; });
@@ -357,7 +369,6 @@
             overlay.appendChild(card);
             document.body.appendChild(overlay);
 
-            // 导出前移除高度限制，确保完整内容被捕获
             card.style.maxHeight = 'none';
             card.style.overflowY = 'visible';
 
