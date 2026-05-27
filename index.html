@@ -77,7 +77,7 @@
         }
         .edit-title-btn:hover { background:#eef; color:var(--accent); }
         .card-delete-btn:hover { background:#fee; color:var(--danger); }
-        .card-body { padding:6px 12px 14px; position:relative; flex:1; display:flex; flex-direction:column; }
+        .card-body { padding:6px 12px 14px; position:relative; display:flex; flex-direction:column; }
         .clear-content-btn {
             position:absolute; top:8px; right:16px;
             background:#f5f5f7; border:1px solid #ddd;
@@ -86,14 +86,15 @@
         }
         .clear-content-btn:hover { background:#ff5252; color:#fff; }
         .card-content-textarea {
-            width:100%; flex:1; min-height:120px;
+            width:100%;
             border:1px solid #eee; border-radius:8px; padding:10px;
             font-family:'SF Mono','Consolas','Menlo',monospace;
             font-size:0.85rem;
             line-height:1.6; margin-top:4px;
-            /* 隐藏原生 resize 手柄，改用自定义拖拽条 */
-            resize: none;
+            resize: none;          /* 彻底禁用原生手柄 */
             overflow-y: auto;
+            /* 关键：移除 flex:1 和 min-height，完全由 JS 控制高度 */
+            height: 120px;         /* 默认高度 */
         }
         /* 自定义拖拽手柄 */
         .resize-handle {
@@ -139,7 +140,7 @@
             .card-header { padding:10px 10px 4px; }
             .card-body { padding:4px 10px 12px; }
             .title-display { font-size:0.9rem; }
-            .card-content-textarea { font-size:0.8rem; min-height:100px; }
+            .card-content-textarea { font-size:0.8rem; }
             .clear-content-btn { right:10px; top:6px; font-size:0.6rem; padding:2px 6px; }
         }
     </style>
@@ -163,9 +164,7 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // ===== 配置 =====
         const BASE_URL = 'https://tempest07.weiqian-yu.workers.dev';
-
         let windowsData = [];
         let nextId = 0;
 
@@ -177,7 +176,6 @@
                 windowsData = data.windows || [];
                 nextId = data.nextId || 1;
             } catch (e) {
-                console.error(e);
                 windowsData = [
                     { id: 1, title: '', content: '' },
                     { id: 2, title: '', content: '' },
@@ -257,56 +255,57 @@
             textarea.className = 'card-content-textarea';
             textarea.value = win.content;
             textarea.placeholder = '在此粘贴交易记录...';
-            // 初始高度（可通过拖动改变）
-            textarea.style.height = '120px';
 
             // 自定义拖拽手柄
             const resizeHandle = document.createElement('div');
             resizeHandle.className = 'resize-handle';
             resizeHandle.title = '拖动调整高度';
 
-            // 拖拽逻辑
+            body.append(clearBtn, textarea, resizeHandle);
+            card.append(header, body);
+
+            // ----- 拖拽逻辑 (修正：直接设置高度，同时阻止浏览器默认拖拽图片行为) -----
             let startY, startHeight;
             function onMouseDown(e) {
                 e.preventDefault();
                 startY = e.clientY;
-                startHeight = parseInt(document.defaultView.getComputedStyle(textarea).height, 10);
-                document.documentElement.addEventListener('mousemove', onMouseMove);
-                document.documentElement.addEventListener('mouseup', onMouseUp);
+                startHeight = textarea.clientHeight; // 获取当前实际高度
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
             }
             function onMouseMove(e) {
                 const delta = e.clientY - startY;
-                const newHeight = Math.max(80, startHeight + delta); // 最小高度80px
+                const newHeight = Math.max(80, startHeight + delta);
                 textarea.style.height = newHeight + 'px';
+                // 确保不会因为 flex 属性而受影响，显式设置 flex 为 none
+                textarea.style.flex = 'none';
             }
             function onMouseUp() {
-                document.documentElement.removeEventListener('mousemove', onMouseMove);
-                document.documentElement.removeEventListener('mouseup', onMouseUp);
-                // 保存高度偏好？这里不需要，仅视觉调整
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
             }
             resizeHandle.addEventListener('mousedown', onMouseDown);
-            // 触摸支持
+
+            // 触摸事件支持
             resizeHandle.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
                 startY = touch.clientY;
-                startHeight = parseInt(document.defaultView.getComputedStyle(textarea).height, 10);
-                document.documentElement.addEventListener('touchmove', onTouchMove);
-                document.documentElement.addEventListener('touchend', onTouchEnd);
+                startHeight = textarea.clientHeight;
+                document.addEventListener('touchmove', onTouchMove);
+                document.addEventListener('touchend', onTouchEnd);
             });
             function onTouchMove(e) {
                 const touch = e.touches[0];
                 const delta = touch.clientY - startY;
                 const newHeight = Math.max(80, startHeight + delta);
                 textarea.style.height = newHeight + 'px';
+                textarea.style.flex = 'none';
             }
             function onTouchEnd() {
-                document.documentElement.removeEventListener('touchmove', onTouchMove);
-                document.documentElement.removeEventListener('touchend', onTouchEnd);
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onTouchEnd);
             }
-
-            body.append(clearBtn, textarea, resizeHandle);
-            card.append(header, body);
 
             // 标题编辑
             function enterEdit() {
@@ -337,7 +336,7 @@
                 win._saveTimer = setTimeout(saveToServer, 800);
             });
 
-            // 清空当前
+            // 清空当前记录
             clearBtn.addEventListener('click', () => {
                 if (win.content.trim() && !confirm('确定清空当前窗口的记录吗？')) return;
                 win.content = '';
@@ -364,7 +363,7 @@
 
         document.getElementById('btnClearTexts').addEventListener('click', () => {
             if (windowsData.length === 0) { showToast('没有窗口'); return; }
-            if (!confirm('确定清空所有窗口的交易记录内容吗？（标题将被保留）')) return;
+            if (!confirm('确定清空所有窗口的交易记录内容吗？（标题保留）')) return;
             windowsData.forEach(w => { w.content = ''; });
             saveToServer();
             render();
@@ -372,7 +371,7 @@
         });
 
         document.getElementById('btnClearAll').addEventListener('click', () => {
-            if (!confirm('确定要清空所有窗口的标题和内容吗？')) return;
+            if (!confirm('确定清空所有窗口的标题和内容吗？')) return;
             windowsData.forEach(w => { w.title = ''; w.content = ''; });
             saveToServer();
             render();
