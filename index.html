@@ -13,6 +13,7 @@
             --border: #e8e8ed;
             --accent: #0071e3;
             --danger: #ff3b30;
+            --warning: #f57c00;
             --radius: 14px;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -43,7 +44,7 @@
         .btn-primary { background:var(--accent); color:#fff; }
         .btn-outline { border:1.5px solid var(--border); }
         .btn-danger { border:1.5px solid #ffcccc; color:var(--danger); }
-        .btn-warning { border:1.5px solid #ffe0b2; color: #f57c00; }
+        .btn-warning { border:1.5px solid #ffe0b2; color: var(--warning); }
         .main-container { max-width:1300px; margin:0 auto; padding:16px; }
         .windows-grid {
             display:grid;
@@ -54,6 +55,7 @@
             background:#fff; border-radius:var(--radius);
             box-shadow:0 1px 4px rgba(0,0,0,0.06);
             border:1px solid var(--border);
+            /* 确保 resize 手柄可见 */
             overflow: visible;
             display:flex; flex-direction:column;
         }
@@ -89,9 +91,10 @@
             border:1px solid #eee; border-radius:8px; padding:10px;
             font-family:'SF Mono','Consolas','Menlo',monospace;
             font-size:0.85rem;
-            resize: vertical;
-            overflow: auto;
             line-height:1.6; margin-top:4px;
+            /* 强制启用垂直拖拽 */
+            resize: vertical !important;
+            overflow: auto !important;
         }
         .toast-container {
             position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
@@ -132,7 +135,7 @@
 <body>
     <nav class="navbar">
         <div class="navbar-brand">
-            <a href="https://你的主页地址.pages.dev">🏠 Tempest07</a> <span style="margin:0 4px; color:#ccc;">/</span> 📋 交易记录
+            <a href="/">🏠 Tempest07</a> <span style="margin:0 4px; color:#ccc;">/</span> 📋 交易记录
         </div>
         <div class="navbar-actions">
             <button class="btn btn-outline btn-sm" id="btnAddWindow">＋ 添加</button>
@@ -249,6 +252,9 @@
             textarea.className = 'card-content-textarea';
             textarea.value = win.content;
             textarea.placeholder = '在此粘贴交易记录...';
+            // 强制启用 resize (双重保险)
+            textarea.style.resize = 'vertical';
+            textarea.style.overflow = 'auto';
 
             body.append(clearBtn, textarea);
             card.append(header, body);
