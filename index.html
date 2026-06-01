@@ -4,71 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>交易记录管理器</title>
-    <!-- Material Icons & Roboto Font -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            /* Material Design 3 Color Tokens */
-            --md-sys-color-primary: #6750A4;
-            --md-sys-color-on-primary: #FFFFFF;
-            --md-sys-color-primary-container: #EADDFF;
-            --md-sys-color-on-primary-container: #21005D;
-            --md-sys-color-secondary: #625B71;
-            --md-sys-color-on-secondary: #FFFFFF;
-            --md-sys-color-error: #B3261E;
-            --md-sys-color-on-error: #FFFFFF;
-            --md-sys-color-error-container: #F9DEDC;
-            --md-sys-color-surface: #FEF7FF;
-            --md-sys-color-on-surface: #1D1B20;
-            --md-sys-color-surface-variant: #E7E0EC;
-            --md-sys-color-on-surface-variant: #49454F;
-            --md-sys-color-outline: #79747E;
-            --md-sys-color-outline-variant: #CAC4D0;
-            --md-sys-color-background: #FFFBFE;
-            --md-sys-color-on-background: #1D1B20;
-            --md-sys-color-inverse-surface: #322F35;
-            --md-sys-color-inverse-on-surface: #F5EFF7;
-
-            /* Elevation */
-            --md-elevation-1: 0 1px 2px 0 rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
-            --md-elevation-2: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
-            --md-elevation-3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px 0 rgba(0,0,0,0.3);
-            --md-radius-extra-small: 4px;
-            --md-radius-small: 8px;
-            --md-radius-medium: 12px;
-            --md-radius-large: 16px;
-            --md-radius-extra-large: 24px;
-            --md-radius-full: 50%;
+            /* Neumorphism 配色 */
+            --neu-bg: #e0e5ec;
+            --neu-bg2: #eef0f5;
+            --neu-shadow-dark: #a3b1c6;
+            --neu-shadow-light: #ffffff;
+            --neu-text: #4a5568;
+            --neu-text-secondary: #718096;
+            --neu-accent: #5a6e8e;
+            --neu-accent-light: #8da0bc;
+            --neu-danger: #c35a5a;
+            --neu-danger-light: #e0a0a0;
+            --neu-radius: 16px;
+            --neu-radius-sm: 12px;
+            --neu-radius-xs: 8px;
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
 
         body {
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: var(--md-sys-color-background);
-            color: var(--md-sys-color-on-background);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--neu-bg);
+            color: var(--neu-text);
             min-height:100vh;
             line-height:1.5;
         }
 
-        /* Top App Bar */
+        /* 导航栏 - 新拟物凸起 */
         .navbar {
             position:sticky; top:0; z-index:100;
-            background: var(--md-sys-color-surface);
-            border-bottom:1px solid var(--md-sys-color-outline-variant);
-            padding:0 16px;
-            height:56px;
+            background: var(--neu-bg);
+            border-bottom: none;
+            padding:12px 24px;
             display:flex; align-items:center; justify-content:space-between;
-            gap:8px; flex-wrap:nowrap;
-            box-shadow: var(--md-elevation-1);
+            gap:12px; flex-wrap:wrap;
+            box-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+            margin: 16px;
+            border-radius: var(--neu-radius);
         }
         .navbar-brand {
             display:flex; align-items:center; gap:8px;
-            font-weight:500; font-size:1.25rem;
-            letter-spacing:0.01em;
-            color: var(--md-sys-color-on-surface);
+            font-weight:600; font-size:1.15rem;
+            color: var(--neu-text);
             white-space:nowrap;
             text-decoration: none;
         }
@@ -77,298 +57,261 @@
             display:flex; align-items:center; gap:8px;
         }
         .navbar-actions {
-            display:flex; align-items:center; gap:8px;
+            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
         }
 
-        /* Material Buttons */
+        /* 新拟物按钮 */
         .btn {
             display:inline-flex; align-items:center; justify-content:center;
-            gap:4px; padding:0 16px;
-            height:36px; min-width:64px;
-            border-radius: var(--md-radius-full);
-            font-size:0.875rem; font-weight:500; letter-spacing:0.1px;
+            gap:6px; padding:10px 20px;
+            border-radius: var(--neu-radius-sm);
+            font-size:0.9rem; font-weight:500;
             cursor:pointer; border:none;
-            transition: background 0.2s, box-shadow 0.2s;
+            transition: all 0.2s ease;
             font-family: inherit;
             white-space:nowrap; text-decoration:none;
-            text-transform: none;
-            position: relative;
-            overflow: hidden;
+            background: var(--neu-bg);
+            color: var(--neu-text);
+            box-shadow: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
         }
-        .btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            opacity: 0;
-            transition: opacity 0.2s;
-            background: currentColor;
+        .btn:active {
+            box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
         }
-        .btn:hover::after { opacity: 0.08; }
-        .btn:active::after { opacity: 0.12; }
-
-        /* Filled button */
         .btn-primary {
-            background: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-            box-shadow: var(--md-elevation-1);
+            background: linear-gradient(145deg, #d4d9e2, #fbfdff);
+            box-shadow: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            color: var(--neu-accent);
+            font-weight:600;
         }
-        .btn-primary:hover { box-shadow: var(--md-elevation-2); }
-
-        /* Outlined button */
         .btn-outline {
-            background: transparent;
-            border: 1px solid var(--md-sys-color-outline);
-            color: var(--md-sys-color-primary);
+            background: var(--neu-bg);
         }
-
-        /* Text button */
         .btn-warning {
-            color: var(--md-sys-color-error);
-            background: transparent;
+            background: var(--neu-bg);
+            color: var(--neu-danger);
         }
         .btn-danger {
-            color: var(--md-sys-color-error);
-            background: transparent;
+            background: var(--neu-bg);
+            color: var(--neu-danger);
         }
 
         .main-container {
             max-width:1300px;
             margin:0 auto;
-            padding:16px;
+            padding:0 16px 24px;
         }
 
         .windows-grid {
             display:grid;
             grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap:16px;
+            gap:20px;
         }
 
-        /* Material Card */
+        /* 新拟物卡片 */
         .window-card {
-            background: var(--md-sys-color-surface);
-            border-radius: var(--md-radius-large);
-            box-shadow: var(--md-elevation-1);
+            background: var(--neu-bg);
+            border-radius: var(--neu-radius);
+            box-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
             border: none;
             overflow: visible;
             display:flex; flex-direction:column;
-            transition: box-shadow 0.2s;
-        }
-        .window-card:hover {
-            box-shadow: var(--md-elevation-2);
+            padding: 0;
         }
 
         .card-header {
-            display:flex; align-items:center; gap:8px;
+            display:flex; align-items:center; gap:10px;
             padding:16px 16px 8px;
         }
 
         .window-index {
             font-size:0.75rem;
-            background: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-            border-radius: var(--md-radius-extra-small);
-            padding:2px 8px;
-            font-weight:500;
-            letter-spacing:0.05em;
+            background: var(--neu-bg2);
+            color: var(--neu-text-secondary);
+            border-radius: var(--neu-radius-xs);
+            padding:4px 10px;
+            font-weight:600;
+            box-shadow: inset 2px 2px 4px var(--neu-shadow-dark), inset -2px -2px 4px var(--neu-shadow-light);
         }
 
-        /* Title display area */
+        /* 标题显示 */
         .title-display {
             flex:1;
-            font-weight:500;
+            font-weight:600;
             font-size:1rem;
-            color: var(--md-sys-color-on-surface);
-            padding:4px 8px;
+            color: var(--neu-text);
+            padding:8px 12px;
             cursor:pointer;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-            border-radius: var(--md-radius-extra-small);
-            transition: background 0.2s;
+            border-radius: var(--neu-radius-xs);
+            background: var(--neu-bg);
+            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
         }
         .title-display.empty {
-            color: var(--md-sys-color-outline);
+            color: var(--neu-text-secondary);
             font-style:italic;
         }
         .title-display:hover {
-            background: rgba(103,80,164,0.08);
+            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
         }
 
-        /* Title input (edit mode) */
+        /* 标题输入框 (编辑模式) - 凹陷 */
         .title-input {
             flex:1;
-            border:1px solid var(--md-sys-color-outline);
-            border-radius: var(--md-radius-extra-small);
-            padding:4px 8px;
-            font-weight:500;
+            border:none;
+            border-radius: var(--neu-radius-xs);
+            padding:8px 12px;
+            font-weight:600;
             font-size:1rem;
-            color: var(--md-sys-color-on-surface);
-            background: var(--md-sys-color-surface-variant);
+            color: var(--neu-text);
+            background: var(--neu-bg);
+            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
             display:none;
             outline: none;
-            transition: border-color 0.2s;
-        }
-        .title-input:focus {
-            border-color: var(--md-sys-color-primary);
-            border-width: 2px;
         }
 
-        /* Icon buttons for edit & delete */
+        /* 图标按钮 */
         .edit-title-btn, .card-delete-btn {
             width:36px; height:36px;
-            border-radius: var(--md-radius-full);
+            border-radius: 50%;
             border:none;
-            background: transparent;
+            background: var(--neu-bg);
             cursor:pointer;
             display:flex; align-items:center; justify-content:center;
-            color: var(--md-sys-color-on-surface-variant);
-            transition: background 0.2s;
+            color: var(--neu-text-secondary);
+            box-shadow: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+            transition: all 0.2s;
         }
-        .edit-title-btn:hover, .card-delete-btn:hover {
-            background: rgba(103,80,164,0.08);
-            color: var(--md-sys-color-primary);
+        .edit-title-btn:active, .card-delete-btn:active {
+            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
         }
 
         .card-body {
             padding:8px 16px 16px;
             position:relative;
             display:flex; flex-direction:column;
-            gap:4px;
+            gap:6px;
         }
 
-        /* Clear text button inside card (small text button) */
+        /* 清空记录按钮 */
         .clear-content-btn {
             position:absolute; top:8px; right:16px;
-            background: transparent;
+            background: var(--neu-bg);
             border: none;
-            color: var(--md-sys-color-error);
+            color: var(--neu-danger);
             font-size:0.75rem;
-            font-weight:500;
+            font-weight:600;
             cursor:pointer;
-            padding:4px 12px;
-            border-radius: var(--md-radius-full);
-            transition: background 0.2s;
+            padding:6px 14px;
+            border-radius: var(--neu-radius-sm);
+            box-shadow: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+            transition: all 0.2s;
             z-index:2;
-            letter-spacing:0.025em;
         }
-        .clear-content-btn:hover {
-            background: var(--md-sys-color-error-container);
+        .clear-content-btn:active {
+            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
         }
 
-        /* Material Text Field (outlined) for content */
+        /* 文本框 - 凹陷 */
         .card-content-textarea {
             width:100%;
             min-height:120px;
             height:120px;
-            border:1px solid var(--md-sys-color-outline);
-            border-radius: var(--md-radius-small);
-            padding:12px;
-            font-family: 'Roboto Mono', monospace;
-            font-size:0.875rem;
+            border: none;
+            border-radius: var(--neu-radius-sm);
+            padding:14px;
+            font-family: 'Menlo', 'Consolas', monospace;
+            font-size:0.9rem;
             line-height:1.5;
-            background: var(--md-sys-color-surface);
-            color: var(--md-sys-color-on-surface);
+            background: var(--neu-bg);
+            color: var(--neu-text);
+            box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
             resize: none;
             overflow-y: auto;
-            transition: border-color 0.2s;
-            margin-top: 4px;
+            transition: box-shadow 0.2s;
         }
         .card-content-textarea:focus {
             outline: none;
-            border-color: var(--md-sys-color-primary);
-            border-width: 2px;
+            box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
         }
 
-        /* Custom resize handle */
+        /* 拖拽手柄 */
         .resize-handle {
             height:6px;
-            background: var(--md-sys-color-outline-variant);
-            border-radius: 0 0 var(--md-radius-small) var(--md-radius-small);
+            background: var(--neu-bg);
+            border-radius: 0 0 var(--neu-radius-sm) var(--neu-radius-sm);
             cursor: ns-resize;
-            transition: background 0.2s;
-            margin-top: 2px;
-            flex-shrink:0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 4px;
         }
         .resize-handle:hover {
-            background: var(--md-sys-color-primary);
+            background: var(--neu-shadow-dark);
         }
 
-        /* Toast */
+        /* 提示 Toast */
         .toast-container {
             position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
             z-index:9999; pointer-events:none;
         }
         .toast {
-            background: var(--md-sys-color-inverse-surface);
-            color: var(--md-sys-color-inverse-on-surface);
-            padding:8px 16px;
-            border-radius: var(--md-radius-full);
-            font-size:0.875rem;
+            background: var(--neu-bg);
+            color: var(--neu-text);
+            padding:10px 24px;
+            border-radius: var(--neu-radius-sm);
+            font-size:0.9rem;
+            font-weight:500;
             margin-top:8px;
-            box-shadow: var(--md-elevation-2);
-            animation: toastIn 0.3s;
+            box-shadow: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            animation: toastIn 0.3s ease;
         }
         @keyframes toastIn{from{opacity:0;transform:translateY(10px);}}
 
-        /* PDF Preview Overlay */
+        /* PDF 预览覆盖 */
         .pdf-preview-overlay {
             position:fixed; top:0; left:0; right:0; bottom:0;
-            background:rgba(0,0,0,0.5); z-index:10000;
+            background:rgba(224,229,236,0.8); backdrop-filter: blur(4px);
+            z-index:10000;
             display:flex; align-items:center; justify-content:center; padding:20px;
         }
         .pdf-preview-card {
             width:780px; max-width:100%;
-            background: var(--md-sys-color-surface);
-            border-radius: var(--md-radius-large);
-            padding:24px 28px;
-            box-shadow: var(--md-elevation-3);
+            background: var(--neu-bg);
+            border-radius: var(--neu-radius);
+            padding:32px;
+            box-shadow: 12px 12px 24px var(--neu-shadow-dark), -12px -12px 24px var(--neu-shadow-light);
             position:relative; overflow-y:auto;
-            color: var(--md-sys-color-on-surface);
+            color: var(--neu-text);
         }
         .pdf-preview-close {
-            position:absolute; top:12px; right:12px;
-            background:none; border:none; font-size:1.5rem; cursor:pointer; color: var(--md-sys-color-on-surface-variant);
+            position:absolute; top:16px; right:16px;
+            background:none; border:none; font-size:1.5rem; cursor:pointer; color: var(--neu-text-secondary);
         }
 
-        /* Responsive adjustments */
         @media (max-width: 600px) {
-            .navbar { height:48px; padding:0 12px; }
-            .btn { height:32px; padding:0 12px; font-size:0.8125rem; }
-            .windows-grid { grid-template-columns: 1fr; gap:12px; }
-            .card-header { padding:12px 12px 6px; }
-            .card-body { padding:6px 12px 12px; }
-            .title-display { font-size:0.9375rem; }
-            .card-content-textarea { font-size:0.8125rem; min-height:100px; }
-            .clear-content-btn { right:12px; top:6px; font-size:0.7rem; }
+            .navbar {
+                margin: 8px;
+                padding: 12px 16px;
+            }
+            .btn {
+                padding: 8px 14px;
+                font-size: 0.8rem;
+            }
+            .windows-grid {
+                grid-template-columns: 1fr;
+                gap:16px;
+            }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="navbar-brand">
-            <a href="/">
-                <span class="material-symbols-outlined" style="font-size:24px;">home</span>
-                Tempest07
-            </a>
-            <span style="margin:0 4px; color: var(--md-sys-color-outline);">/</span>
-            <span>📋 交易记录</span>
+            <a href="/">🏠 Tempest07</a> <span style="margin:0 6px; opacity:0.4;">/</span> 📋 交易记录
         </div>
         <div class="navbar-actions">
-            <button class="btn btn-outline btn-sm" id="btnAddWindow">
-                <span class="material-symbols-outlined" style="font-size:18px;">add</span>
-                添加
-            </button>
-            <button class="btn btn-warning btn-sm" id="btnClearTexts">
-                <span class="material-symbols-outlined" style="font-size:18px;">format_color_text</span>
-                清空文本
-            </button>
-            <button class="btn btn-danger btn-sm" id="btnClearAll">
-                <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
-                全部清空
-            </button>
-            <button class="btn btn-primary" id="btnExportPDF">
-                <span class="material-symbols-outlined" style="font-size:18px;">picture_as_pdf</span>
-                导出
-            </button>
+            <button class="btn btn-outline" id="btnAddWindow">＋ 添加</button>
+            <button class="btn btn-warning" id="btnClearTexts">📝 清空文本</button>
+            <button class="btn btn-danger" id="btnClearAll">🗑️ 全部清空</button>
+            <button class="btn btn-primary" id="btnExportPDF">📄 导出 PDF</button>
         </div>
     </nav>
 
@@ -378,9 +321,7 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        // ===== 配置（保持不变） =====
         const BASE_URL = 'https://tempest07.weiqian-yu.workers.dev';
-
         let windowsData = [];
         let nextId = 0;
 
@@ -392,7 +333,6 @@
                 windowsData = data.windows || [];
                 nextId = data.nextId || 1;
             } catch (e) {
-                console.error(e);
                 windowsData = [
                     { id: 1, title: '', content: '' },
                     { id: 2, title: '', content: '' },
@@ -434,7 +374,6 @@
             const card = document.createElement('div');
             card.className = 'window-card';
 
-            // Header
             const header = document.createElement('div');
             header.className = 'card-header';
 
@@ -452,17 +391,16 @@
 
             const editBtn = document.createElement('button');
             editBtn.className = 'edit-title-btn';
-            editBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">edit</span>';
+            editBtn.innerHTML = '✎';
             editBtn.title = '编辑标题';
 
             const delBtn = document.createElement('button');
             delBtn.className = 'card-delete-btn';
-            delBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">close</span>';
+            delBtn.innerHTML = '✕';
             delBtn.title = '删除窗口';
 
             header.append(idxSpan, titleDisplay, titleInput, editBtn, delBtn);
 
-            // Body
             const body = document.createElement('div');
             body.className = 'card-body';
 
@@ -475,7 +413,6 @@
             textarea.value = win.content;
             textarea.placeholder = '在此粘贴交易记录...';
 
-            // Custom resize handle
             const resizeHandle = document.createElement('div');
             resizeHandle.className = 'resize-handle';
             resizeHandle.title = '拖动调整高度';
@@ -483,7 +420,6 @@
             body.append(clearBtn, textarea, resizeHandle);
             card.append(header, body);
 
-            // ----- 拖拽逻辑 -----
             let startY, startHeight;
             function onMouseDown(e) {
                 e.preventDefault();
@@ -504,7 +440,6 @@
             }
             resizeHandle.addEventListener('mousedown', onMouseDown);
 
-            // Touch support
             resizeHandle.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
@@ -525,7 +460,6 @@
                 document.removeEventListener('touchend', onTouchEnd);
             }
 
-            // 标题编辑
             function enterEdit() {
                 titleDisplay.style.display = 'none';
                 titleInput.style.display = 'block';
@@ -598,9 +532,9 @@
 
             const now = new Date();
             const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-            let html = `<div style="text-align:center; padding-bottom:16px; border-bottom:2px solid #eee; margin-bottom:20px;">
+            let html = `<div style="text-align:center; padding-bottom:16px; border-bottom:2px solid #ccc; margin-bottom:20px;">
                 <h1 style="margin:0; font-size:1.5rem;">交易记录汇总</h1>
-                <p style="color:#888;">${dateStr}　共 ${windowsData.length} 个窗口</p></div>`;
+                <p style="color:#666;">${dateStr}　共 ${windowsData.length} 个窗口</p></div>`;
             windowsData.forEach((w, i) => {
                 const title = w.title.trim() || '未命名窗口';
                 const content = (w.content || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
