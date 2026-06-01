@@ -4,157 +4,371 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>交易记录管理器</title>
+    <!-- Material Icons & Roboto Font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            --bg: #f5f5f7;
-            --card-bg: #ffffff;
-            --text: #1d1d1f;
-            --border: #e8e8ed;
-            --accent: #0071e3;
-            --danger: #ff3b30;
-            --warning: #f57c00;
-            --radius: 14px;
+            /* Material Design 3 Color Tokens */
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-error: #B3261E;
+            --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-error-container: #F9DEDC;
+            --md-sys-color-surface: #FEF7FF;
+            --md-sys-color-on-surface: #1D1B20;
+            --md-sys-color-surface-variant: #E7E0EC;
+            --md-sys-color-on-surface-variant: #49454F;
+            --md-sys-color-outline: #79747E;
+            --md-sys-color-outline-variant: #CAC4D0;
+            --md-sys-color-background: #FFFBFE;
+            --md-sys-color-on-background: #1D1B20;
+            --md-sys-color-inverse-surface: #322F35;
+            --md-sys-color-inverse-on-surface: #F5EFF7;
+
+            /* Elevation */
+            --md-elevation-1: 0 1px 2px 0 rgba(0,0,0,0.3), 0 1px 3px 1px rgba(0,0,0,0.15);
+            --md-elevation-2: 0 1px 2px 0 rgba(0,0,0,0.3), 0 2px 6px 2px rgba(0,0,0,0.15);
+            --md-elevation-3: 0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px 0 rgba(0,0,0,0.3);
+            --md-radius-extra-small: 4px;
+            --md-radius-small: 8px;
+            --md-radius-medium: 12px;
+            --md-radius-large: 16px;
+            --md-radius-extra-large: 24px;
+            --md-radius-full: 50%;
         }
+
         * { margin:0; padding:0; box-sizing:border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: var(--bg); color: var(--text); min-height:100vh; line-height:1.5;
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-background);
+            min-height:100vh;
+            line-height:1.5;
         }
+
+        /* Top App Bar */
         .navbar {
             position:sticky; top:0; z-index:100;
-            background:rgba(255,255,255,0.9); backdrop-filter:blur(20px);
-            border-bottom:1px solid var(--border);
-            padding:8px 16px;
+            background: var(--md-sys-color-surface);
+            border-bottom:1px solid var(--md-sys-color-outline-variant);
+            padding:0 16px;
+            height:56px;
             display:flex; align-items:center; justify-content:space-between;
-            gap:8px; flex-wrap:wrap;
+            gap:8px; flex-wrap:nowrap;
+            box-shadow: var(--md-elevation-1);
         }
         .navbar-brand {
-            display:flex; align-items:center; gap:6px; font-weight:700; font-size:1.1rem; white-space:nowrap;
+            display:flex; align-items:center; gap:8px;
+            font-weight:500; font-size:1.25rem;
+            letter-spacing:0.01em;
+            color: var(--md-sys-color-on-surface);
+            white-space:nowrap;
+            text-decoration: none;
         }
-        .navbar-brand a { text-decoration:none; color:inherit; }
-        .navbar-actions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+        .navbar-brand a {
+            text-decoration:none; color:inherit;
+            display:flex; align-items:center; gap:8px;
+        }
+        .navbar-actions {
+            display:flex; align-items:center; gap:8px;
+        }
+
+        /* Material Buttons */
         .btn {
             display:inline-flex; align-items:center; justify-content:center;
-            gap:4px; padding:7px 12px; border-radius:18px;
-            font-size:0.85rem; font-weight:500; cursor:pointer; border:none;
-            transition:0.2s; font-family:inherit; background:#fff;
+            gap:4px; padding:0 16px;
+            height:36px; min-width:64px;
+            border-radius: var(--md-radius-full);
+            font-size:0.875rem; font-weight:500; letter-spacing:0.1px;
+            cursor:pointer; border:none;
+            transition: background 0.2s, box-shadow 0.2s;
+            font-family: inherit;
             white-space:nowrap; text-decoration:none;
+            text-transform: none;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-primary { background:var(--accent); color:#fff; }
-        .btn-outline { border:1.5px solid var(--border); }
-        .btn-danger { border:1.5px solid #ffcccc; color:var(--danger); }
-        .btn-warning { border:1.5px solid #ffe0b2; color: var(--warning); }
-        .main-container { max-width:1300px; margin:0 auto; padding:16px; }
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: currentColor;
+        }
+        .btn:hover::after { opacity: 0.08; }
+        .btn:active::after { opacity: 0.12; }
+
+        /* Filled button */
+        .btn-primary {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            box-shadow: var(--md-elevation-1);
+        }
+        .btn-primary:hover { box-shadow: var(--md-elevation-2); }
+
+        /* Outlined button */
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--md-sys-color-outline);
+            color: var(--md-sys-color-primary);
+        }
+
+        /* Text button */
+        .btn-warning {
+            color: var(--md-sys-color-error);
+            background: transparent;
+        }
+        .btn-danger {
+            color: var(--md-sys-color-error);
+            background: transparent;
+        }
+
+        .main-container {
+            max-width:1300px;
+            margin:0 auto;
+            padding:16px;
+        }
+
         .windows-grid {
             display:grid;
-            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
             gap:16px;
         }
+
+        /* Material Card */
         .window-card {
-            background:#fff; border-radius:var(--radius);
-            box-shadow:0 1px 4px rgba(0,0,0,0.06);
-            border:1px solid var(--border);
+            background: var(--md-sys-color-surface);
+            border-radius: var(--md-radius-large);
+            box-shadow: var(--md-elevation-1);
+            border: none;
             overflow: visible;
             display:flex; flex-direction:column;
+            transition: box-shadow 0.2s;
         }
-        .card-header { display:flex; align-items:center; gap:6px; padding:12px 12px 6px; }
-        .window-index { font-size:0.7rem; background:#f0f0f5; border-radius:5px; padding:2px 6px; font-weight:600; }
+        .window-card:hover {
+            box-shadow: var(--md-elevation-2);
+        }
+
+        .card-header {
+            display:flex; align-items:center; gap:8px;
+            padding:16px 16px 8px;
+        }
+
+        .window-index {
+            font-size:0.75rem;
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            border-radius: var(--md-radius-extra-small);
+            padding:2px 8px;
+            font-weight:500;
+            letter-spacing:0.05em;
+        }
+
+        /* Title display area */
         .title-display {
-            flex:1; font-weight:600; padding:6px 4px; cursor:pointer;
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:0.95rem;
+            flex:1;
+            font-weight:500;
+            font-size:1rem;
+            color: var(--md-sys-color-on-surface);
+            padding:4px 8px;
+            cursor:pointer;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            border-radius: var(--md-radius-extra-small);
+            transition: background 0.2s;
         }
-        .title-display.empty { color:#aaa; font-style:italic; }
+        .title-display.empty {
+            color: var(--md-sys-color-outline);
+            font-style:italic;
+        }
+        .title-display:hover {
+            background: rgba(103,80,164,0.08);
+        }
+
+        /* Title input (edit mode) */
         .title-input {
-            flex:1; border:1.5px solid var(--accent); border-radius:6px;
-            padding:6px 8px; font-weight:600; display:none; font-size:0.95rem;
+            flex:1;
+            border:1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-radius-extra-small);
+            padding:4px 8px;
+            font-weight:500;
+            font-size:1rem;
+            color: var(--md-sys-color-on-surface);
+            background: var(--md-sys-color-surface-variant);
+            display:none;
+            outline: none;
+            transition: border-color 0.2s;
         }
+        .title-input:focus {
+            border-color: var(--md-sys-color-primary);
+            border-width: 2px;
+        }
+
+        /* Icon buttons for edit & delete */
         .edit-title-btn, .card-delete-btn {
-            width:30px; height:30px; border-radius:50%;
-            border:none; background:transparent; cursor:pointer;
-            font-size:1rem; display:flex; align-items:center; justify-content:center;
-            flex-shrink:0;
+            width:36px; height:36px;
+            border-radius: var(--md-radius-full);
+            border:none;
+            background: transparent;
+            cursor:pointer;
+            display:flex; align-items:center; justify-content:center;
+            color: var(--md-sys-color-on-surface-variant);
+            transition: background 0.2s;
         }
-        .edit-title-btn:hover { background:#eef; color:var(--accent); }
-        .card-delete-btn:hover { background:#fee; color:var(--danger); }
-        .card-body { padding:6px 12px 14px; position:relative; display:flex; flex-direction:column; }
+        .edit-title-btn:hover, .card-delete-btn:hover {
+            background: rgba(103,80,164,0.08);
+            color: var(--md-sys-color-primary);
+        }
+
+        .card-body {
+            padding:8px 16px 16px;
+            position:relative;
+            display:flex; flex-direction:column;
+            gap:4px;
+        }
+
+        /* Clear text button inside card (small text button) */
         .clear-content-btn {
             position:absolute; top:8px; right:16px;
-            background:#f5f5f7; border:1px solid #ddd;
-            border-radius:12px; padding:2px 8px; font-size:0.65rem;
-            color:#666; cursor:pointer; z-index:2;
+            background: transparent;
+            border: none;
+            color: var(--md-sys-color-error);
+            font-size:0.75rem;
+            font-weight:500;
+            cursor:pointer;
+            padding:4px 12px;
+            border-radius: var(--md-radius-full);
+            transition: background 0.2s;
+            z-index:2;
+            letter-spacing:0.025em;
         }
-        .clear-content-btn:hover { background:#ff5252; color:#fff; }
+        .clear-content-btn:hover {
+            background: var(--md-sys-color-error-container);
+        }
+
+        /* Material Text Field (outlined) for content */
         .card-content-textarea {
             width:100%;
-            border:1px solid #eee; border-radius:8px; padding:10px;
-            font-family:'SF Mono','Consolas','Menlo',monospace;
-            font-size:0.85rem;
-            line-height:1.6; margin-top:4px;
-            resize: none;          /* 彻底禁用原生手柄 */
+            min-height:120px;
+            height:120px;
+            border:1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-radius-small);
+            padding:12px;
+            font-family: 'Roboto Mono', monospace;
+            font-size:0.875rem;
+            line-height:1.5;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            resize: none;
             overflow-y: auto;
-            /* 关键：移除 flex:1 和 min-height，完全由 JS 控制高度 */
-            height: 120px;         /* 默认高度 */
+            transition: border-color 0.2s;
+            margin-top: 4px;
         }
-        /* 自定义拖拽手柄 */
+        .card-content-textarea:focus {
+            outline: none;
+            border-color: var(--md-sys-color-primary);
+            border-width: 2px;
+        }
+
+        /* Custom resize handle */
         .resize-handle {
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 0 0 8px 8px;
+            height:6px;
+            background: var(--md-sys-color-outline-variant);
+            border-radius: 0 0 var(--md-radius-small) var(--md-radius-small);
             cursor: ns-resize;
             transition: background 0.2s;
             margin-top: 2px;
-            flex-shrink: 0;
+            flex-shrink:0;
         }
         .resize-handle:hover {
-            background: #0071e3;
+            background: var(--md-sys-color-primary);
         }
+
+        /* Toast */
         .toast-container {
             position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
             z-index:9999; pointer-events:none;
         }
-        .toast { background:#333; color:#fff; padding:8px 18px; border-radius:16px; font-size:0.8rem; margin-top:6px; animation:toastIn 0.3s; }
+        .toast {
+            background: var(--md-sys-color-inverse-surface);
+            color: var(--md-sys-color-inverse-on-surface);
+            padding:8px 16px;
+            border-radius: var(--md-radius-full);
+            font-size:0.875rem;
+            margin-top:8px;
+            box-shadow: var(--md-elevation-2);
+            animation: toastIn 0.3s;
+        }
         @keyframes toastIn{from{opacity:0;transform:translateY(10px);}}
 
+        /* PDF Preview Overlay */
         .pdf-preview-overlay {
             position:fixed; top:0; left:0; right:0; bottom:0;
-            background:rgba(0,0,0,0.4); z-index:10000;
+            background:rgba(0,0,0,0.5); z-index:10000;
             display:flex; align-items:center; justify-content:center; padding:20px;
         }
         .pdf-preview-card {
             width:780px; max-width:100%;
-            background:#fff; border-radius:16px; padding:24px 28px;
-            box-shadow:0 20px 50px rgba(0,0,0,0.3);
+            background: var(--md-sys-color-surface);
+            border-radius: var(--md-radius-large);
+            padding:24px 28px;
+            box-shadow: var(--md-elevation-3);
             position:relative; overflow-y:auto;
+            color: var(--md-sys-color-on-surface);
         }
         .pdf-preview-close {
-            position:absolute; top:10px; right:14px;
-            background:none; border:none; font-size:1.4rem; cursor:pointer; color:#999;
+            position:absolute; top:12px; right:12px;
+            background:none; border:none; font-size:1.5rem; cursor:pointer; color: var(--md-sys-color-on-surface-variant);
         }
 
+        /* Responsive adjustments */
         @media (max-width: 600px) {
-            .navbar { padding:6px 10px; gap:4px; }
-            .navbar-brand { font-size:1rem; }
-            .btn { padding:5px 10px; font-size:0.75rem; border-radius:16px; gap:2px; }
+            .navbar { height:48px; padding:0 12px; }
+            .btn { height:32px; padding:0 12px; font-size:0.8125rem; }
             .windows-grid { grid-template-columns: 1fr; gap:12px; }
-            .card-header { padding:10px 10px 4px; }
-            .card-body { padding:4px 10px 12px; }
-            .title-display { font-size:0.9rem; }
-            .card-content-textarea { font-size:0.8rem; }
-            .clear-content-btn { right:10px; top:6px; font-size:0.6rem; padding:2px 6px; }
+            .card-header { padding:12px 12px 6px; }
+            .card-body { padding:6px 12px 12px; }
+            .title-display { font-size:0.9375rem; }
+            .card-content-textarea { font-size:0.8125rem; min-height:100px; }
+            .clear-content-btn { right:12px; top:6px; font-size:0.7rem; }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="navbar-brand">
-            <a href="/">🏠 Tempest07</a> <span style="margin:0 4px; color:#ccc;">/</span> 📋 交易记录
+            <a href="/">
+                <span class="material-symbols-outlined" style="font-size:24px;">home</span>
+                Tempest07
+            </a>
+            <span style="margin:0 4px; color: var(--md-sys-color-outline);">/</span>
+            <span>📋 交易记录</span>
         </div>
         <div class="navbar-actions">
-            <button class="btn btn-outline btn-sm" id="btnAddWindow">＋ 添加</button>
-            <button class="btn btn-warning btn-sm" id="btnClearTexts">📝 清空文本</button>
-            <button class="btn btn-danger btn-sm" id="btnClearAll">🗑️ 全部清空</button>
-            <button class="btn btn-primary" id="btnExportPDF">📄 导出</button>
+            <button class="btn btn-outline btn-sm" id="btnAddWindow">
+                <span class="material-symbols-outlined" style="font-size:18px;">add</span>
+                添加
+            </button>
+            <button class="btn btn-warning btn-sm" id="btnClearTexts">
+                <span class="material-symbols-outlined" style="font-size:18px;">format_color_text</span>
+                清空文本
+            </button>
+            <button class="btn btn-danger btn-sm" id="btnClearAll">
+                <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
+                全部清空
+            </button>
+            <button class="btn btn-primary" id="btnExportPDF">
+                <span class="material-symbols-outlined" style="font-size:18px;">picture_as_pdf</span>
+                导出
+            </button>
         </div>
     </nav>
 
@@ -164,7 +378,9 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
+        // ===== 配置（保持不变） =====
         const BASE_URL = 'https://tempest07.weiqian-yu.workers.dev';
+
         let windowsData = [];
         let nextId = 0;
 
@@ -176,6 +392,7 @@
                 windowsData = data.windows || [];
                 nextId = data.nextId || 1;
             } catch (e) {
+                console.error(e);
                 windowsData = [
                     { id: 1, title: '', content: '' },
                     { id: 2, title: '', content: '' },
@@ -217,6 +434,7 @@
             const card = document.createElement('div');
             card.className = 'window-card';
 
+            // Header
             const header = document.createElement('div');
             header.className = 'card-header';
 
@@ -234,29 +452,30 @@
 
             const editBtn = document.createElement('button');
             editBtn.className = 'edit-title-btn';
-            editBtn.innerHTML = '✎';
+            editBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">edit</span>';
             editBtn.title = '编辑标题';
 
             const delBtn = document.createElement('button');
             delBtn.className = 'card-delete-btn';
-            delBtn.innerHTML = '✕';
+            delBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;">close</span>';
             delBtn.title = '删除窗口';
 
             header.append(idxSpan, titleDisplay, titleInput, editBtn, delBtn);
 
+            // Body
             const body = document.createElement('div');
             body.className = 'card-body';
 
             const clearBtn = document.createElement('button');
             clearBtn.className = 'clear-content-btn';
-            clearBtn.textContent = '清空';
+            clearBtn.textContent = '清空记录';
 
             const textarea = document.createElement('textarea');
             textarea.className = 'card-content-textarea';
             textarea.value = win.content;
             textarea.placeholder = '在此粘贴交易记录...';
 
-            // 自定义拖拽手柄
+            // Custom resize handle
             const resizeHandle = document.createElement('div');
             resizeHandle.className = 'resize-handle';
             resizeHandle.title = '拖动调整高度';
@@ -264,12 +483,12 @@
             body.append(clearBtn, textarea, resizeHandle);
             card.append(header, body);
 
-            // ----- 拖拽逻辑 (修正：直接设置高度，同时阻止浏览器默认拖拽图片行为) -----
+            // ----- 拖拽逻辑 -----
             let startY, startHeight;
             function onMouseDown(e) {
                 e.preventDefault();
                 startY = e.clientY;
-                startHeight = textarea.clientHeight; // 获取当前实际高度
+                startHeight = textarea.clientHeight;
                 document.addEventListener('mousemove', onMouseMove);
                 document.addEventListener('mouseup', onMouseUp);
             }
@@ -277,7 +496,6 @@
                 const delta = e.clientY - startY;
                 const newHeight = Math.max(80, startHeight + delta);
                 textarea.style.height = newHeight + 'px';
-                // 确保不会因为 flex 属性而受影响，显式设置 flex 为 none
                 textarea.style.flex = 'none';
             }
             function onMouseUp() {
@@ -286,7 +504,7 @@
             }
             resizeHandle.addEventListener('mousedown', onMouseDown);
 
-            // 触摸事件支持
+            // Touch support
             resizeHandle.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
@@ -329,14 +547,12 @@
             });
             titleDisplay.addEventListener('dblclick', enterEdit);
 
-            // 内容编辑
             textarea.addEventListener('input', () => {
                 win.content = textarea.value;
                 clearTimeout(win._saveTimer);
                 win._saveTimer = setTimeout(saveToServer, 800);
             });
 
-            // 清空当前记录
             clearBtn.addEventListener('click', () => {
                 if (win.content.trim() && !confirm('确定清空当前窗口的记录吗？')) return;
                 win.content = '';
@@ -344,7 +560,6 @@
                 saveToServer();
             });
 
-            // 删除窗口
             delBtn.addEventListener('click', () => {
                 if ((win.title.trim() || win.content.trim()) && !confirm('确定删除这个窗口吗？')) return;
                 windowsData = windowsData.filter(w => w.id !== win.id);
