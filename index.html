@@ -7,310 +7,347 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            /* Neumorphism 配色 */
-            --neu-bg: #e0e5ec;
-            --neu-bg2: #eef0f5;
-            --neu-shadow-dark: #a3b1c6;
-            --neu-shadow-light: #ffffff;
-            --neu-text: #4a5568;
-            --neu-text-secondary: #718096;
-            --neu-accent: #5a6e8e;
-            --neu-accent-light: #8da0bc;
-            --neu-danger: #c35a5a;
-            --neu-danger-light: #e0a0a0;
-            --neu-radius: 16px;
-            --neu-radius-sm: 12px;
-            --neu-radius-xs: 8px;
+            --bg-start: #f3e7ff;
+            --bg-end: #e7f0ff;
+            --card-bg: rgba(255,255,255,0.75);
+            --card-border: rgba(255,255,255,0.5);
+            --shadow-sm: 0 8px 20px rgba(148, 163, 184, 0.1), 0 2px 6px rgba(148, 163, 184, 0.06);
+            --shadow-md: 0 12px 28px rgba(148, 163, 184, 0.15), 0 4px 10px rgba(148, 163, 184, 0.08);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --warning: #f59e0b;
+            --radius-sm: 10px;
+            --radius: 16px;
+            --radius-lg: 20px;
         }
 
         * { margin:0; padding:0; box-sizing:border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: var(--neu-bg);
-            color: var(--neu-text);
-            min-height:100vh;
-            line-height:1.5;
+            background: linear-gradient(135deg, var(--bg-start) 0%, var(--bg-end) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            backdrop-filter: blur(10px);
         }
 
-        /* 导航栏 - 新拟物凸起 */
+        /* 导航栏：半透明磨砂玻璃 */
         .navbar {
-            position:sticky; top:0; z-index:100;
-            background: var(--neu-bg);
-            border-bottom: none;
-            padding:12px 24px;
-            display:flex; align-items:center; justify-content:space-between;
-            gap:12px; flex-wrap:wrap;
-            box-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
-            margin: 16px;
-            border-radius: var(--neu-radius);
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+            padding: 8px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         }
         .navbar-brand {
-            display:flex; align-items:center; gap:8px;
-            font-weight:600; font-size:1.15rem;
-            color: var(--neu-text);
-            white-space:nowrap;
+            display: flex; align-items: center; gap: 8px;
+            font-weight: 600; font-size: 1.15rem;
+            color: var(--text-primary);
+            white-space: nowrap;
             text-decoration: none;
         }
         .navbar-brand a {
-            text-decoration:none; color:inherit;
-            display:flex; align-items:center; gap:8px;
+            text-decoration: none; color: inherit;
+            display: flex; align-items: center; gap: 8px;
         }
         .navbar-actions {
-            display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
         }
 
-        /* 新拟物按钮 */
+        /* 按钮体系 */
         .btn {
-            display:inline-flex; align-items:center; justify-content:center;
-            gap:6px; padding:10px 20px;
-            border-radius: var(--neu-radius-sm);
-            font-size:0.9rem; font-weight:500;
-            cursor:pointer; border:none;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: 6px; padding: 8px 18px;
+            border-radius: 40px;
+            font-size: 0.875rem; font-weight: 500;
+            cursor: pointer; border: none;
             transition: all 0.2s ease;
             font-family: inherit;
-            white-space:nowrap; text-decoration:none;
-            background: var(--neu-bg);
-            color: var(--neu-text);
-            box-shadow: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            white-space: nowrap; text-decoration: none;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            color: var(--text-primary);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        .btn:hover {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            transform: translateY(-1px);
         }
         .btn:active {
-            box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            transform: translateY(0);
         }
         .btn-primary {
-            background: linear-gradient(145deg, #d4d9e2, #fbfdff);
-            box-shadow: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
-            color: var(--neu-accent);
-            font-weight:600;
+            background: var(--accent);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+        }
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
         }
         .btn-outline {
-            background: var(--neu-bg);
+            background: transparent;
+            border: 1px solid rgba(148, 163, 184, 0.3);
         }
-        .btn-warning {
-            background: var(--neu-bg);
-            color: var(--neu-danger);
+        .btn-danger-text {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid transparent;
         }
-        .btn-danger {
-            background: var(--neu-bg);
-            color: var(--neu-danger);
+        .btn-warning-text {
+            background: transparent;
+            color: var(--warning);
+            border: 1px solid transparent;
         }
 
         .main-container {
-            max-width:1300px;
-            margin:0 auto;
-            padding:0 16px 24px;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px 16px 40px;
         }
 
         .windows-grid {
-            display:grid;
+            display: grid;
             grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap:20px;
+            gap: 20px;
         }
 
-        /* 新拟物卡片 */
+        /* 卡片：玻璃质感 */
         .window-card {
-            background: var(--neu-bg);
-            border-radius: var(--neu-radius);
-            box-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
-            border: none;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: var(--radius);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow-sm);
             overflow: visible;
-            display:flex; flex-direction:column;
-            padding: 0;
+            display: flex; flex-direction: column;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .window-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
 
         .card-header {
-            display:flex; align-items:center; gap:10px;
-            padding:16px 16px 8px;
+            display: flex; align-items: center; gap: 10px;
+            padding: 16px 16px 8px;
         }
 
         .window-index {
-            font-size:0.75rem;
-            background: var(--neu-bg2);
-            color: var(--neu-text-secondary);
-            border-radius: var(--neu-radius-xs);
-            padding:4px 10px;
-            font-weight:600;
-            box-shadow: inset 2px 2px 4px var(--neu-shadow-dark), inset -2px -2px 4px var(--neu-shadow-light);
+            font-size: 0.75rem;
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--accent);
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
         }
 
-        /* 标题显示 */
+        /* 标题显示：轻微背景 */
         .title-display {
-            flex:1;
-            font-weight:600;
-            font-size:1rem;
-            color: var(--neu-text);
-            padding:8px 12px;
-            cursor:pointer;
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-            border-radius: var(--neu-radius-xs);
-            background: var(--neu-bg);
-            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            flex: 1;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            padding: 8px 12px;
+            cursor: pointer;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            border-radius: 8px;
+            background: rgba(148, 163, 184, 0.06);
+            transition: background 0.2s;
         }
         .title-display.empty {
-            color: var(--neu-text-secondary);
-            font-style:italic;
+            color: var(--text-muted);
+            font-style: italic;
         }
         .title-display:hover {
-            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+            background: rgba(148, 163, 184, 0.12);
         }
 
-        /* 标题输入框 (编辑模式) - 凹陷 */
+        /* 标题编辑输入框 */
         .title-input {
-            flex:1;
-            border:none;
-            border-radius: var(--neu-radius-xs);
-            padding:8px 12px;
-            font-weight:600;
-            font-size:1rem;
-            color: var(--neu-text);
-            background: var(--neu-bg);
-            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
-            display:none;
+            flex: 1;
+            border: 1.5px solid rgba(139, 92, 246, 0.4);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.9);
+            display: none;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
         }
 
         /* 图标按钮 */
-        .edit-title-btn, .card-delete-btn {
-            width:36px; height:36px;
+        .icon-btn {
+            width: 34px; height: 34px;
             border-radius: 50%;
-            border:none;
-            background: var(--neu-bg);
-            cursor:pointer;
-            display:flex; align-items:center; justify-content:center;
-            color: var(--neu-text-secondary);
-            box-shadow: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+            border: none;
+            background: rgba(148, 163, 184, 0.06);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
             transition: all 0.2s;
         }
-        .edit-title-btn:active, .card-delete-btn:active {
-            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+        .icon-btn:hover {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--text-primary);
         }
 
         .card-body {
-            padding:8px 16px 16px;
-            position:relative;
-            display:flex; flex-direction:column;
-            gap:6px;
+            padding: 8px 16px 16px;
+            position: relative;
+            display: flex; flex-direction: column;
+            gap: 6px;
         }
 
-        /* 清空记录按钮 */
+        /* 清空记录按钮（卡片内） */
         .clear-content-btn {
-            position:absolute; top:8px; right:16px;
-            background: var(--neu-bg);
-            border: none;
-            color: var(--neu-danger);
-            font-size:0.75rem;
-            font-weight:600;
-            cursor:pointer;
-            padding:6px 14px;
-            border-radius: var(--neu-radius-sm);
-            box-shadow: 3px 3px 6px var(--neu-shadow-dark), -3px -3px 6px var(--neu-shadow-light);
+            position: absolute; top: 10px; right: 16px;
+            background: rgba(255,255,255,0.6);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 12px;
+            border-radius: 30px;
             transition: all 0.2s;
-            z-index:2;
+            z-index: 2;
+            backdrop-filter: blur(8px);
         }
-        .clear-content-btn:active {
-            box-shadow: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+        .clear-content-btn:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
         }
 
-        /* 文本框 - 凹陷 */
+        /* 文本框 */
         .card-content-textarea {
-            width:100%;
-            min-height:120px;
-            height:120px;
-            border: none;
-            border-radius: var(--neu-radius-sm);
-            padding:14px;
-            font-family: 'Menlo', 'Consolas', monospace;
-            font-size:0.9rem;
-            line-height:1.5;
-            background: var(--neu-bg);
-            color: var(--neu-text);
-            box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            width: 100%;
+            min-height: 120px;
+            height: 120px;
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 12px;
+            padding: 14px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.5);
+            color: var(--text-primary);
             resize: none;
             overflow-y: auto;
-            transition: box-shadow 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            backdrop-filter: blur(4px);
         }
         .card-content-textarea:focus {
             outline: none;
-            box-shadow: inset 4px 4px 8px var(--neu-shadow-dark), inset -4px -4px 8px var(--neu-shadow-light);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
         }
 
-        /* 拖拽手柄 */
+        /* 自定义拖拽手柄 */
         .resize-handle {
-            height:6px;
-            background: var(--neu-bg);
-            border-radius: 0 0 var(--neu-radius-sm) var(--neu-radius-sm);
+            height: 5px;
+            background: rgba(148, 163, 184, 0.15);
+            border-radius: 0 0 12px 12px;
             cursor: ns-resize;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-top: 4px;
+            transition: background 0.2s;
+            margin-top: 2px;
+            flex-shrink: 0;
         }
         .resize-handle:hover {
-            background: var(--neu-shadow-dark);
+            background: var(--accent);
         }
 
-        /* 提示 Toast */
+        /* Toast 提示 */
         .toast-container {
-            position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
-            z-index:9999; pointer-events:none;
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+            z-index: 9999; pointer-events: none;
         }
         .toast {
-            background: var(--neu-bg);
-            color: var(--neu-text);
-            padding:10px 24px;
-            border-radius: var(--neu-radius-sm);
-            font-size:0.9rem;
-            font-weight:500;
-            margin-top:8px;
-            box-shadow: 4px 4px 8px var(--neu-shadow-dark), -4px -4px 8px var(--neu-shadow-light);
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(12px);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
             animation: toastIn 0.3s ease;
         }
-        @keyframes toastIn{from{opacity:0;transform:translateY(10px);}}
+        @keyframes toastIn { from { opacity: 0; transform: translateY(10px); } }
 
-        /* PDF 预览覆盖 */
+        /* PDF 预览浮层 */
         .pdf-preview-overlay {
-            position:fixed; top:0; left:0; right:0; bottom:0;
-            background:rgba(224,229,236,0.8); backdrop-filter: blur(4px);
-            z-index:10000;
-            display:flex; align-items:center; justify-content:center; padding:20px;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
         }
         .pdf-preview-card {
-            width:780px; max-width:100%;
-            background: var(--neu-bg);
-            border-radius: var(--neu-radius);
-            padding:32px;
-            box-shadow: 12px 12px 24px var(--neu-shadow-dark), -12px -12px 24px var(--neu-shadow-light);
-            position:relative; overflow-y:auto;
-            color: var(--neu-text);
+            width: 780px; max-width: 100%;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            position: relative; overflow-y: auto;
+            color: var(--text-primary);
         }
         .pdf-preview-close {
-            position:absolute; top:16px; right:16px;
-            background:none; border:none; font-size:1.5rem; cursor:pointer; color: var(--neu-text-secondary);
+            position: absolute; top: 16px; right: 16px;
+            background: rgba(0,0,0,0.04);
+            border: none;
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
+            transition: background 0.2s;
+        }
+        .pdf-preview-close:hover {
+            background: rgba(0,0,0,0.1);
         }
 
         @media (max-width: 600px) {
-            .navbar {
-                margin: 8px;
-                padding: 12px 16px;
-            }
-            .btn {
-                padding: 8px 14px;
-                font-size: 0.8rem;
-            }
-            .windows-grid {
-                grid-template-columns: 1fr;
-                gap:16px;
-            }
+            .navbar { padding: 8px 16px; }
+            .btn { padding: 6px 14px; font-size: 0.8rem; }
+            .windows-grid { grid-template-columns: 1fr; gap: 16px; }
+            .card-header { padding: 14px 14px 6px; }
+            .card-body { padding: 6px 14px 14px; }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="navbar-brand">
-            <a href="/">🏠 Tempest07</a> <span style="margin:0 6px; opacity:0.4;">/</span> 📋 交易记录
+            <a href="/">🏠 Tempest07</a>
+            <span style="opacity:0.4; margin:0 4px;">/</span>
+            📋 交易记录
         </div>
         <div class="navbar-actions">
             <button class="btn btn-outline" id="btnAddWindow">＋ 添加</button>
-            <button class="btn btn-warning" id="btnClearTexts">📝 清空文本</button>
-            <button class="btn btn-danger" id="btnClearAll">🗑️ 全部清空</button>
+            <button class="btn btn-warning-text" id="btnClearTexts">📝 清空文本</button>
+            <button class="btn btn-danger-text" id="btnClearAll">🗑️ 全部清空</button>
             <button class="btn btn-primary" id="btnExportPDF">📄 导出 PDF</button>
         </div>
     </nav>
@@ -390,12 +427,12 @@
             titleInput.value = win.title;
 
             const editBtn = document.createElement('button');
-            editBtn.className = 'edit-title-btn';
+            editBtn.className = 'icon-btn';
             editBtn.innerHTML = '✎';
             editBtn.title = '编辑标题';
 
             const delBtn = document.createElement('button');
-            delBtn.className = 'card-delete-btn';
+            delBtn.className = 'icon-btn';
             delBtn.innerHTML = '✕';
             delBtn.title = '删除窗口';
 
@@ -420,6 +457,7 @@
             body.append(clearBtn, textarea, resizeHandle);
             card.append(header, body);
 
+            // 拖拽调整高度
             let startY, startHeight;
             function onMouseDown(e) {
                 e.preventDefault();
@@ -460,6 +498,7 @@
                 document.removeEventListener('touchend', onTouchEnd);
             }
 
+            // 标题编辑
             function enterEdit() {
                 titleDisplay.style.display = 'none';
                 titleInput.style.display = 'block';
@@ -532,9 +571,9 @@
 
             const now = new Date();
             const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
-            let html = `<div style="text-align:center; padding-bottom:16px; border-bottom:2px solid #ccc; margin-bottom:20px;">
+            let html = `<div style="text-align:center; padding-bottom:16px; border-bottom:2px solid #eee; margin-bottom:20px;">
                 <h1 style="margin:0; font-size:1.5rem;">交易记录汇总</h1>
-                <p style="color:#666;">${dateStr}　共 ${windowsData.length} 个窗口</p></div>`;
+                <p style="color:#888;">${dateStr}　共 ${windowsData.length} 个窗口</p></div>`;
             windowsData.forEach((w, i) => {
                 const title = w.title.trim() || '未命名窗口';
                 const content = (w.content || '').replace(/</g, '&lt;').replace(/\n/g, '<br>');
