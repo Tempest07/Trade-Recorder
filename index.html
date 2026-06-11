@@ -473,8 +473,10 @@
     </svg>
 
     <script>
-        const WORKER_URL = 'https://tempest07.weiqian-yu.workers.dev';
-        const API_BASE = ['localhost', '127.0.0.1'].includes(location.hostname) ? '' : WORKER_URL;
+        const DEFAULT_WORKER_URL = 'https://tempest07.weiqian-yu.workers.dev';
+        const API_BASE = ['localhost', '127.0.0.1'].includes(location.hostname)
+            ? ''
+            : (window.TRADE_RECORDER_API_BASE || DEFAULT_WORKER_URL).replace(/\/+$/, '');
         const CACHE_KEY = 'trade-recorder-cache-v2';
         const MAX_TITLE_LENGTH = 200;
         const MAX_CONTENT_LENGTH = 200000;
